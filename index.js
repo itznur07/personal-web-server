@@ -41,7 +41,7 @@ async function run() {
           subject,
           message,
         });
-        res.status(201).json(result.ops[0]);
+        res.status(201).json(result);
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
@@ -52,24 +52,6 @@ async function run() {
       try {
         const contacts = await contactsCollection.find().toArray();
         res.status(200).json(contacts);
-      } catch (error) {
-        res.status(500).json({ error: error.message });
-      }
-    });
-
-    // PUT - Update a contact
-    app.put("/api/contacts/:id", async (req, res) => {
-      const { id } = req.params;
-      const { name, email, subject, message } = req.body;
-      try {
-        const result = await contactsCollection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { name, email, subject, message } }
-        );
-        if (result.matchedCount === 0) {
-          return res.status(404).json({ error: "Contact not found" });
-        }
-        res.status(200).json({ message: "Contact updated successfully" });
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
