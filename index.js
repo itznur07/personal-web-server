@@ -28,6 +28,7 @@ async function run() {
     // Collections
 
     const contactsCollection = db.collection("contacts");
+    const blogsCollection = db.collection("blogs");
 
     // ============================================
 
@@ -70,6 +71,52 @@ async function run() {
         res.status(200).json({ message: "Contact deleted successfully" });
       } catch (error) {
         res.status(500).json({ error: error.message });
+      }
+    });
+
+    // Create blog post endpoint
+    app.post("/api/blogs", async (req, res) => {
+      try {
+        const { title, link, tag, cover, message } = req.body;
+
+        const newBlog = new blogsCollection({
+          title,
+          link,
+          tag,
+          cover,
+          message,
+        });
+        await newBlog.save();
+
+        res.status(201).json({ insertedId: newBlog._id });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to create blog post" });
+      }
+    });
+
+    // Retrieve all blog posts endpoint
+    app.get("/api/blogs", async (req, res) => {
+      try {
+        const blogs = await blogsCollection.find();
+        res.status(200).json(blogs);
+      } catch (error) {
+        res.status(500).json({ error: "Failed to retrieve blog posts" });
+      }
+    });
+
+    // Remove a blog post by ID endpoint
+    app.delete("/api/blogs/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+        const deletedBlog = await blogsCollection.findByIdAndDelete(id);
+
+        if (!deletedBlog) {
+          return res.status(404).json({ error: "Blog post not found" });
+        }
+
+        res.status(200).json({ message: "Blog post deleted successfully" });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to delete blog post" });
       }
     });
 
