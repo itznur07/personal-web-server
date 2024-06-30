@@ -26,7 +26,6 @@ async function run() {
     const db = client.db("itznur07");
 
     // Collections
-
     const contactsCollection = db.collection("contacts");
     const blogsCollection = db.collection("blogs");
 
@@ -74,46 +73,43 @@ async function run() {
       }
     });
 
-    // Create blog post endpoint
+    // POST - Create a blog post
     app.post("/api/blogs", async (req, res) => {
+      const { title, link, tag, cover, message } = req.body;
       try {
-        const { title, link, tag, cover, message } = req.body;
-
-        const newBlog = new blogsCollection({
+        const result = await blogsCollection.insertOne({
           title,
           link,
           tag,
           cover,
           message,
         });
-        await newBlog.save();
-
-        res.status(201).json({ insertedId: newBlog._id });
+        res.status(201).json(result);
       } catch (error) {
         res.status(500).json({ error: "Failed to create blog post" });
       }
     });
 
-    // Retrieve all blog posts endpoint
+    // GET - Retrieve all blog posts
     app.get("/api/blogs", async (req, res) => {
       try {
-        const blogs = await blogsCollection.find();
+        const blogs = await blogsCollection.find().toArray();
         res.status(200).json(blogs);
       } catch (error) {
         res.status(500).json({ error: "Failed to retrieve blog posts" });
       }
     });
 
-    // Remove a blog post by ID endpoint
+    // DELETE - Remove a blog post by ID
     app.delete("/api/blogs/:id", async (req, res) => {
+      const { id } = req.params;
       try {
-        const { id } = req.params;
-        const deletedBlog = await blogsCollection.findByIdAndDelete(id);
-
-        if (!deletedBlog) {
+        const result = await blogsCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
+        if (result.deletedCount === 0) {
           return res.status(404).json({ error: "Blog post not found" });
         }
-
         res.status(200).json({ message: "Blog post deleted successfully" });
       } catch (error) {
         res.status(500).json({ error: "Failed to delete blog post" });
@@ -127,6 +123,7 @@ async function run() {
       console.log(`Server is running on http://localhost:${port}`);
     });
   } finally {
+    // Ensure client will close when you finish/error
   }
 }
 
