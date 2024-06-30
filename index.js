@@ -116,6 +116,27 @@ async function run() {
       }
     });
 
+    // PATCH - Edit a blog post by ID
+    app.patch("/api/blogs/:id", async (req, res) => {
+      const { id } = req.params;
+      const updateData = req.body;
+
+      try {
+        const result = await blogsCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ error: "Blog post not found" });
+        }
+
+        res.status(200).json({ message: "Blog post updated successfully" });
+      } catch (error) {
+        res.status(500).json({ error: "Failed to update blog post" });
+      }
+    });
+
     // ==============================================================
 
     // Start the server
